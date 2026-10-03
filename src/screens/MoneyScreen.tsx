@@ -31,6 +31,8 @@ const CATEGORY_ICONS: Record<string, IconName> = {
 
 const FALLBACK_ICON: IconName = 'circle-outline';
 
+const CHIPS_PER_ROW = 3;
+
 const WEEKDAY_NAMES = [
   'Sunday',
   'Monday',
@@ -84,6 +86,16 @@ export default function MoneyScreen({ navigation }: Props) {
     return map;
   }, [categories]);
 
+  // The frame lays the chips out as a fixed 3-column grid (3 x 2 for the six
+  // sample categories), never a wrapping single row.
+  const chipRows = useMemo(() => {
+    const rows: (typeof categories)[] = [];
+    for (let index = 0; index < categories.length; index += CHIPS_PER_ROW) {
+      rows.push(categories.slice(index, index + CHIPS_PER_ROW));
+    }
+    return rows;
+  }, [categories]);
+
   const initial = (profile.name.trim()[0] ?? 'R').toUpperCase();
   const headerTop = Math.max(insets.top, 25);
 
@@ -134,35 +146,7 @@ export default function MoneyScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <View style={styles.quickCard}>
-          <Text style={[styles.eyebrow, styles.quickTitle]}>QUICK CATEGORIES</Text>
-          <View style={styles.chipGrid}>
-            {categories.map((category) => {
-              const selected = activeCategory === category.id;
-              return (
-                <Pressable
-                  key={category.id}
-                  testID={`money-chip-${category.id}`}
-                  accessibilityRole="button"
-                  accessibilityLabel={category.label}
-                  accessibilityState={{ selected }}
-                  onPress={() =>
-                    setActiveCategory((previous) => (previous === category.id ? null : category.id))
-                  }
-                  style={[styles.chip, selected && styles.chipSelected]}
-                >
-                  <MaterialCommunityIcons
-                    name={CATEGORY_ICONS[category.id] ?? FALLBACK_ICON}
-                    size={34}
-                    color={colors.fgStrong}
-                  />
-                </Pressable>
-              );
-            })}
-          </View>
-        </View>
-
-        <View style={styles.list}>
+        <View testID="money-list-panel" style={styles.listPanel}>
           {visibleTransactions.map((tx) => (
             <Pressable
               key={tx.id}
@@ -191,6 +175,38 @@ export default function MoneyScreen({ navigation }: Props) {
           {visibleTransactions.length === 0 ? (
             <Text style={styles.emptyText}>No bookings in this category yet.</Text>
           ) : null}
+        </View>
+
+        <View style={styles.quickCard}>
+          <Text style={[styles.eyebrow, styles.quickTitle]}>QUICK CATEGORIES</Text>
+          <View style={styles.chipGrid}>
+            {chipRows.map((row, rowIndex) => (
+              <View key={`chip-row-${rowIndex}`} testID={`money-chip-row-${rowIndex}`} style={styles.chipRow}>
+                {row.map((category) => {
+                  const selected = activeCategory === category.id;
+                  return (
+                    <Pressable
+                      key={category.id}
+                      testID={`money-chip-${category.id}`}
+                      accessibilityRole="button"
+                      accessibilityLabel={category.label}
+                      accessibilityState={{ selected }}
+                      onPress={() =>
+                        setActiveCategory((previous) => (previous === category.id ? null : category.id))
+                      }
+                      style={[styles.chip, selected && styles.chipSelected]}
+                    >
+                      <MaterialCommunityIcons
+                        name={CATEGORY_ICONS[category.id] ?? FALLBACK_ICON}
+                        size={36}
+                        color={colors.fgStrong}
+                      />
+                    </Pressable>
+                  );
+                })}
+              </View>
+            ))}
+          </View>
         </View>
       </ScrollView>
 
@@ -298,51 +314,18 @@ const styles = StyleSheet.create({
     color: colors.fgStrong,
     textTransform: 'uppercase',
   },
-  quickCard: {
-    alignSelf: 'center',
-    width: 330,
-    marginTop: 47,
-    borderRadius: radii.xxl,
+  // The white booking panel starts right below the 406px hero (frame y 407).
+  // 29px top inset puts the first 83px row on the frame's y 436.
+  listPanel: {
     backgroundColor: colors.surface,
-    paddingTop: 34,
-    paddingHorizontal: 24,
-    paddingBottom: 52,
-  },
-  quickTitle: {
-    textAlign: 'center',
-  },
-  chipGrid: {
-    marginTop: 28,
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-    rowGap: 37,
-  },
-  chip: {
-    width: 55,
-    height: 55,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderColor: colors.fgStrong,
-    backgroundColor: colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  chipSelected: {
-    borderStyle: 'solid',
-    borderColor: colors.accent,
-    backgroundColor: colors.accent15,
-  },
-  list: {
-    marginTop: 24,
-    paddingHorizontal: 28,
+    paddingTop: 29,
+    paddingLeft: 28,
+    paddingRight: 60,
   },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    minHeight: 83,
-    paddingVertical: 15,
+    height: 83,
   },
   rowPressed: {
     opacity: 0.6,
@@ -382,6 +365,43 @@ const styles = StyleSheet.create({
     color: colors.muted,
     textAlign: 'center',
     paddingVertical: spacing.space5,
+  },
+  quickCard: {
+    alignSelf: 'center',
+    width: 330,
+    marginTop: spacing.space6,
+    borderRadius: radii.xxl,
+    backgroundColor: colors.surface,
+    paddingTop: 34,
+    paddingHorizontal: 24,
+    paddingBottom: 52,
+  },
+  quickTitle: {
+    textAlign: 'center',
+  },
+  chipGrid: {
+    marginTop: 28,
+    gap: 37,
+  },
+  chipRow: {
+    flexDirection: 'row',
+    columnGap: 54,
+  },
+  chip: {
+    width: 55,
+    height: 55,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: colors.fgStrong,
+    backgroundColor: colors.surface,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  chipSelected: {
+    borderStyle: 'solid',
+    borderColor: colors.accent,
+    backgroundColor: colors.accent15,
   },
   fabWrap: {
     position: 'absolute',
