@@ -129,25 +129,18 @@ interface MetricCardProps {
   testID: string;
   label: string;
   value: string;
-  disabled?: boolean;
 }
 
-function MetricCard({ testID, label, value, disabled = false }: MetricCardProps) {
+function MetricCard({ testID, label, value }: MetricCardProps) {
   return (
     <View
       testID={testID}
       accessible
-      accessibilityLabel={disabled ? `${label}: ${value}, coming soon` : `${label}: ${value}`}
-      accessibilityState={disabled ? { disabled: true } : undefined}
+      accessibilityLabel={`${label}: ${value}`}
       style={styles.metricCard}
     >
       <Text style={styles.metricLabel}>{label}</Text>
       <Text style={styles.metricValue}>{value}</Text>
-      {disabled ? (
-        <View style={styles.metricComingSoonPill}>
-          <Text style={styles.comingSoonText}>Coming soon</Text>
-        </View>
-      ) : null}
     </View>
   );
 }
@@ -239,19 +232,16 @@ export default function DashboardScreen({ navigation }: Props) {
             testID="dashboard-metric-spend"
             label="Total spend"
             value={formatCurrency(totalSpend)}
-            disabled
           />
           <MetricCard
             testID="dashboard-metric-appointments"
             label="Upcoming appointments"
             value={String(upcomingCount)}
-            disabled
           />
           <MetricCard
             testID="dashboard-metric-entries"
             label="Total entries"
             value={String(totalEntries)}
-            disabled
           />
         </View>
 
@@ -354,14 +344,6 @@ const styles = StyleSheet.create({
     ...typography.text25,
     color: colors.fg,
     marginTop: spacing.space0,
-  },
-  metricComingSoonPill: {
-    alignSelf: 'flex-start',
-    backgroundColor: colors.fg,
-    borderRadius: radii.xs,
-    paddingHorizontal: spacing.space1,
-    paddingVertical: spacing.space0,
-    marginTop: spacing.space1,
   },
   card: {
     width: '48%',
