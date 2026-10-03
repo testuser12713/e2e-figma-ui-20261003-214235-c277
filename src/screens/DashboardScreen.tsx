@@ -14,6 +14,8 @@ import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { MainTabParamList, RootStackParamList } from '../navigation/types';
+import { useAppData } from '../store/AppDataContext';
+import { formatCurrency } from '../lib/format';
 import {
   bottomContentPadding,
   colors,
@@ -123,9 +125,36 @@ function DashboardCard({ entry, onOpen }: DashboardCardProps) {
   );
 }
 
+interface MetricCardProps {
+  testID: string;
+  label: string;
+  value: string;
+}
+
+function MetricCard({ testID, label, value }: MetricCardProps) {
+  return (
+    <View testID={testID} accessible accessibilityLabel={`${label}: ${value}`} style={styles.metricCard}>
+      <Text style={styles.metricLabel}>{label}</Text>
+      <Text style={styles.metricValue}>{value}</Text>
+    </View>
+  );
+}
+
 export default function DashboardScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
+  const { transactions, appointments } = useAppData();
   const [query, setQuery] = useState('');
+
+  const totalSpend = useMemo(
+    () =>
+      transactions.reduce((sum, transaction) => sum + (Number.isFinite(transaction.amount) ? transaction.amount : 0), 0),
+    [transactions],
+  );
+  const upcomingCount = useMemo(
+    () => appointments.filter((appointment) => appointment.status === 'upcoming').length,
+    [appointments],
+  );
+  const totalEntries = transactions.length + appointments.length;
 
   const entries = useMemo(() => {
     const needle = query.trim().toLowerCase();
@@ -191,6 +220,24 @@ export default function DashboardScreen({ navigation }: Props) {
             style={styles.searchInput}
           />
           <Ionicons name="search" size={16} color={colors.fgBody} />
+        </View>
+
+        <View style={styles.metrics}>
+          <MetricCard
+            testID="dashboard-metric-spend"
+            label="Total spend"
+            value={formatCurrency(totalSpend)}
+          />
+          <MetricCard
+            testID="dashboard-metric-appointments"
+            label="Upcoming appointments"
+            value={String(upcomingCount)}
+          />
+          <MetricCard
+            testID="dashboard-metric-entries"
+            label="Total entries"
+            value={String(totalEntries)}
+          />
         </View>
 
         <View style={styles.grid}>
@@ -271,6 +318,27 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.space6,
     marginTop: spacing.space6,
+  },
+  metrics: {
+    paddingHorizontal: spacing.space6,
+    marginTop: spacing.space6,
+    gap: spacing.space3,
+  },
+  metricCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.xxl,
+    padding: spacing.space4,
+    ...shadows.card,
+  },
+  metricLabel: {
+    ...typography.text12,
+    color: colors.fgStrong,
+    textTransform: 'uppercase',
+  },
+  metricValue: {
+    ...typography.text25,
+    color: colors.fg,
+    marginTop: spacing.space0,
   },
   card: {
     width: '48%',

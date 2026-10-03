@@ -2,6 +2,10 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 
 import DashboardScreen from '../src/screens/DashboardScreen';
+import { AppDataProvider } from '../src/store/AppDataContext';
+import { formatCurrency } from '../src/lib/format';
+import { transactions } from '../src/data/transactions';
+import { appointments } from '../src/data/appointments';
 
 jest.setTimeout(30000);
 
@@ -19,10 +23,12 @@ function renderDashboard() {
     getParent: () => ({ navigate: parentNavigate }),
   };
   return render(
-    <DashboardScreen
-      navigation={navigation as never}
-      route={{ key: 'Dashboard-key', name: 'Dashboard' } as never}
-    />,
+    <AppDataProvider>
+      <DashboardScreen
+        navigation={navigation as never}
+        route={{ key: 'Dashboard-key', name: 'Dashboard' } as never}
+      />
+    </AppDataProvider>,
   );
 }
 
@@ -66,6 +72,15 @@ describe('DashboardScreen', () => {
       disabled: true,
     });
     expect(screen.getAllByText('coming soon')).toHaveLength(2);
+  });
+
+  it('shows the key figures derived from the shared sample data', async () => {
+    await renderDashboard();
+    const totalSpend = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+    const upcoming = appointments.filter((appointment) => appointment.status === 'upcoming').length;
+    expect(screen.getByText(formatCurrency(totalSpend))).toBeTruthy();
+    expect(screen.getByText(String(upcoming))).toBeTruthy();
+    expect(screen.getByText(String(transactions.length + appointments.length))).toBeTruthy();
   });
 
   it('filters the entries by the search query', async () => {
