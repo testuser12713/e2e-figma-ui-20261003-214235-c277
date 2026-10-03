@@ -39,9 +39,9 @@ const userIcon = require('../../design/figma/assets/noun-user-1335326.png');
 const pencilIcon = require('../../design/figma/assets/noun-pencil-2174975.png');
 const infoIcon = require('../../design/figma/assets/noun-info-1174604.png');
 
-function ComingSoon() {
+function ComingSoon({ testID }: { testID?: string }) {
   return (
-    <View style={styles.comingSoon}>
+    <View testID={testID} style={styles.comingSoon}>
       <Text style={styles.comingSoonText}>coming soon</Text>
     </View>
   );
@@ -99,7 +99,7 @@ export default function TimeScreen({ navigation }: Props) {
         ]}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.headerRow}>
+        <View testID="time-header-row" style={styles.headerRow}>
           <Pressable
             testID="time-header-back"
             accessibilityRole="button"
@@ -116,20 +116,20 @@ export default function TimeScreen({ navigation }: Props) {
           >
             <Image source={backIcon} style={styles.backIcon} />
           </Pressable>
-          <Pressable
-            testID="time-header-user"
-            accessibilityRole="button"
-            accessibilityLabel="Profile, coming soon"
-            accessibilityState={{ disabled: true }}
-            disabled
-            style={[styles.headerControl, styles.headerControlDisabled]}
-            hitSlop={styles.hitSlop}
-          >
-            <Image source={userIcon} style={styles.userIcon} />
-          </Pressable>
-        </View>
-        <View style={styles.headerNote}>
-          <ComingSoon />
+          <View style={styles.headerRight}>
+            <ComingSoon testID="time-header-coming-soon" />
+            <Pressable
+              testID="time-header-user"
+              accessibilityRole="button"
+              accessibilityLabel="Profile, coming soon"
+              accessibilityState={{ disabled: true }}
+              disabled
+              style={[styles.headerControl, styles.headerControlDisabled]}
+              hitSlop={styles.hitSlop}
+            >
+              <Image source={userIcon} style={styles.userIcon} />
+            </Pressable>
+          </View>
         </View>
 
         <Text style={styles.screenTitle}>My Appointments</Text>
@@ -211,10 +211,19 @@ export default function TimeScreen({ navigation }: Props) {
                   disabled
                   style={styles.modify}
                 >
-                  <Image source={pencilIcon} style={styles.pencilIcon} />
+                  <View testID={`time-modify-pencil-${appointment.id}`} style={styles.pencilBox}>
+                    <Image
+                      source={pencilIcon}
+                      style={styles.pencilIcon}
+                      resizeMode="contain"
+                      testID={`time-modify-pencil-image-${appointment.id}`}
+                    />
+                  </View>
                   <Text style={styles.modifyText}>Modify</Text>
                 </Pressable>
-                <ComingSoon />
+                <View style={styles.rowBadge}>
+                  <ComingSoon />
+                </View>
               </View>
             </Pressable>
           ))
@@ -230,18 +239,20 @@ export default function TimeScreen({ navigation }: Props) {
           <Text style={styles.primaryLabel}>Add a new appointment</Text>
         </Pressable>
 
-        <Pressable
-          testID="time-overview"
-          accessibilityRole="button"
-          accessibilityLabel="Overview, coming soon"
-          accessibilityState={{ disabled: true }}
-          disabled
-          style={styles.secondaryButton}
-        >
-          <Text style={styles.primaryLabel}>Overview</Text>
-        </Pressable>
-        <View style={styles.overviewNote}>
-          <ComingSoon />
+        <View testID="time-overview-row" style={styles.overviewRow}>
+          <Pressable
+            testID="time-overview"
+            accessibilityRole="button"
+            accessibilityLabel="Overview, coming soon"
+            accessibilityState={{ disabled: true }}
+            disabled
+            style={styles.secondaryButton}
+          >
+            <Text style={styles.primaryLabel}>Overview</Text>
+          </Pressable>
+          <View pointerEvents="none" style={styles.overviewBadge}>
+            <ComingSoon testID="time-overview-coming-soon" />
+          </View>
         </View>
       </ScrollView>
 
@@ -287,6 +298,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.space0,
+  },
   headerControl: {
     width: 27,
     height: 27,
@@ -306,10 +322,6 @@ const styles = StyleSheet.create({
     width: 27,
     height: 27,
     resizeMode: 'contain',
-  },
-  headerNote: {
-    alignItems: 'flex-end',
-    marginTop: spacing.space0,
   },
   screenTitle: {
     ...typography.text16,
@@ -420,20 +432,30 @@ const styles = StyleSheet.create({
   modify: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
     opacity: 0.4,
+  },
+  pencilBox: {
+    width: 12,
+    height: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+    marginRight: spacing.space0,
   },
   pencilIcon: {
     width: 12,
     height: 12,
-    marginRight: spacing.space0,
-    resizeMode: 'contain',
   },
   modifyText: {
     ...typography.text14,
     color: colors.fg,
+    textAlign: 'right',
+  },
+  rowBadge: {
+    marginTop: spacing.space0,
   },
   comingSoon: {
-    marginTop: spacing.space0,
     paddingHorizontal: spacing.space0 + 2,
     paddingVertical: 2,
     borderRadius: radii.xs,
@@ -467,13 +489,19 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent85,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.space5,
     opacity: 0.4,
     ...shadows.card,
   },
-  overviewNote: {
-    alignItems: 'flex-end',
-    marginTop: spacing.space1,
+  overviewRow: {
+    position: 'relative',
+    marginTop: spacing.space5,
+  },
+  overviewBadge: {
+    position: 'absolute',
+    right: spacing.space3,
+    top: 0,
+    bottom: 0,
+    justifyContent: 'center',
   },
   fabWrap: {
     position: 'absolute',
