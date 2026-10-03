@@ -7,7 +7,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
 import AppDataContext from '../store/AppDataContext';
 import { profile as seedProfile } from '../data/profile';
-import { colors, radii, spacing, typography } from '../theme';
+import { colors, radii, spacing, tabBarHeight, typography } from '../theme';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'DashboardMenu'>;
 
@@ -158,15 +158,20 @@ export default function DashboardMenuScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: colors.bgTint,
+    backgroundColor: 'transparent',
   },
   scrim: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: tabBarHeight,
     backgroundColor: 'rgba(0, 0, 0, 0.4)',
   },
   drawer: {
-    width: 294,
-    height: '100%',
+    flex: 1,
+    width: '100%',
+    marginBottom: tabBarHeight,
     backgroundColor: colors.surface,
     shadowColor: colors.fgStrong,
     shadowOffset: { width: 0, height: 3 },

@@ -78,7 +78,11 @@ export default function RootNavigator() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="MainTabs" component={MainTabs} />
-        <Stack.Screen name="DashboardMenu" component={DashboardMenuScreen} />
+        <Stack.Screen
+          name="DashboardMenu"
+          component={DashboardMenuScreen}
+          options={{ presentation: 'transparentModal' }}
+        />
         <Stack.Screen name="DashboardStats" component={DashboardStatsScreen} />
         <Stack.Screen name="MoneyDetail" component={MoneyDetailScreen} />
         <Stack.Screen name="TimeDetail" component={TimeDetailScreen} />
