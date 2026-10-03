@@ -2,6 +2,7 @@ import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react-native';
 
 import App from '../App';
+import { AppDataProvider } from '../src/store/AppDataContext';
 import DashboardMenuScreen from '../src/screens/DashboardMenuScreen';
 import DashboardStatsScreen from '../src/screens/DashboardStatsScreen';
 import MoneyDetailScreen from '../src/screens/MoneyDetailScreen';
@@ -85,7 +86,9 @@ describe('Registered stack screens render', () => {
 
   it('renders DashboardStats', async () => {
     await render(
-      <DashboardStatsScreen navigation={makeNavigation() as never} route={makeRoute('DashboardStats') as never} />,
+      <AppDataProvider>
+        <DashboardStatsScreen navigation={makeNavigation() as never} route={makeRoute('DashboardStats') as never} />
+      </AppDataProvider>,
     );
     expect(screen.getByTestId('screen-dashboard-stats')).toBeTruthy();
   });
